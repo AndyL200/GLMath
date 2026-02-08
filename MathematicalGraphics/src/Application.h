@@ -4,9 +4,11 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <thread>
 #include <vector>
+#include "Shader.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -23,6 +25,7 @@ class Application {
 		void run();
 	private:
 		GLFWmonitor* primary;
+		std::unique_ptr<Shader> shader;
 };
 
 
