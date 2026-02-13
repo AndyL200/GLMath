@@ -1,10 +1,8 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <memory>
 #include "Application.h"
 
-
 int main() {
-	std::unique_ptr<Application> app;
+	std::unique_ptr<Application> app = std::make_unique<Application>();
 	app->run();
 	
 

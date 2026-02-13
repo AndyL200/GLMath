@@ -1,12 +1,16 @@
 #version 330 core
-layout (location = 0) in vec2 pos;
-out vec3 fragCol;
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec3 color;
+layout (location = 2) in vec2 tex;
 
-uniform vec3 col;
-uniform mat4 projection;
+out vec3 fragCol;
+out vec2 fragTex;
+
+uniform mat4 perspective;
 
 void main()
 {
-gl_Position = projection * vec4(pos, 0, 1);
-fragCol = col;
+gl_Position = perspective * vec4(pos, 1);
+fragCol = color;
+fragTex = tex;
 }

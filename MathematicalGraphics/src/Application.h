@@ -4,7 +4,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -18,10 +17,9 @@
 #endif
 
 class Application {
-	Application() { primary = nullptr; };
-
 	public:
 		std::thread input_thread;
+		Application() { this->primary = nullptr; this->shader = std::make_unique<Shader>();};
 		void run();
 	private:
 		GLFWmonitor* primary;
