@@ -23,11 +23,21 @@
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Player.cpp" />
+    <ClCompile Include="src\stb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Application.h" />
+    <ClInclude Include="src\Cursor.h" />
     <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\Shader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\grid.frag" />
+    <None Include="shaders\grid.vert" />
+    <None Include="shaders\tile.frag" />
+    <None Include="shaders\tile.vert" />
+    <None Include="shaders\txt.frag" />
+    <None Include="shaders\txt.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

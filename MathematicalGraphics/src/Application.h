@@ -19,11 +19,10 @@
 class Application {
 	public:
 		std::thread input_thread;
-		Application() { this->primary = nullptr; this->shader = std::make_unique<Shader>();};
+		Application() { this->primary = nullptr;};
 		void run();
 	private:
 		GLFWmonitor* primary;
-		std::unique_ptr<Shader> shader;
 };
 
 

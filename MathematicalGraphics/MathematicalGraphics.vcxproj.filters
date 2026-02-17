@@ -27,6 +27,9 @@
     <ClCompile Include="src\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\stb.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Application.h">
@@ -38,5 +41,16 @@
     <ClInclude Include="src\Player.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Cursor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\tile.vert" />
+    <None Include="shaders\tile.frag" />
+    <None Include="shaders\grid.frag" />
+    <None Include="shaders\grid.vert" />
+    <None Include="shaders\txt.frag" />
+    <None Include="shaders\txt.vert" />
   </ItemGroup>
 </Project>
