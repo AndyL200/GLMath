@@ -1,14 +1,11 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
+#include "mpch.h"
 #include <glm/gtc/type_ptr.hpp>
-#include "Shader.h"
+#include "Cursor.h"
 #include <functional>
 #include <mutex>
 
 #ifndef MATHPLAYER
 #define MATHPLAYER
-
 
 //using the component model
 enum ControlSignals {
@@ -48,35 +45,35 @@ private:
 class Camera {
 public:
 	glm::vec3 pos;
-	void setCameraUniform(const glm::mat4& perspective, const glm::mat4& view, Shader& s);
-	Camera(glm::vec3 pos) : pos(pos) {};
-	Camera(const Camera& other) : pos(other.pos), perspective(other.getPerspective()), view(other.getView()) {};
-	Camera() { this->pos = { 0,0,0 }; };
-
+	glm::vec3 orientation;
+	int width;
+	int height;
+	glm::vec3 up = { 0,1,0 };
+	void Matrix(Shader& s);
+	void Matrix(Shader& s, glm::mat4& perspective);
+	Camera(glm::vec3 pos, glm::vec3 orientation) : pos(pos), orientation(orientation) {};
+	Camera(const Camera& other) : pos(other.pos), perspective(other.getPerspective()), orientation(other.orientation), width(other.width), height(other.height) {};
+	Camera() {
+		this->pos = { 0,0,0 };
+		this->orientation = { 0,0,0 };
+		perspective = glm::mat4(1);
+	}
 	glm::mat4 getPerspective() const { return perspective; }
-	glm::mat4 getView() const { return view; }
 private:
 	glm::mat4 perspective;
-	glm::mat4 view;
 
 };
 
 class Player {
 public:
-	glm::vec3 pos;
 	float speed = 0.5f;
 	Camera* cam;
-	glm::vec3 euler; //put the euler angles in radians to make things easier (just translate to degrees for the player)
-	ControlComponent control; //small enough for stack
-	CursorComponent cursor;
-	unsigned int signals; //bitfield for control signals
-	std::mutex signal_mutex; //mutex for thread safety when modifying signals
 
-	Player(glm::vec3& pos, Camera* cam) : pos(pos), cam(cam) { this->euler = {0, 0, 0}; this->control = ControlComponent(); };
+	Player(glm::vec3& pos, Camera* cam) : pos(pos), cam(cam) { this->orientation = {0, 0, 0}; this->control = ControlComponent(); };
 	Player() {
 		this->pos = { 0,0,0 };
-		this->cam = new Camera(pos);
-		this->euler = { 0, 0, 0 };
+		this->cam = new Camera(pos, orientation);
+		this->orientation = { 0, 0, 0 };
 		this->control = ControlComponent();
 
 		this->control.setSignalCallback([this](ControlSignals signal) {
@@ -88,12 +85,13 @@ public:
 	};
 
 	void handleControlSignals();
+	void handleCursorChange(double xpos, double ypos, float sensitivity);
 	~Player() {
 		delete cam;
 	}
 
 	//Copy Constructor
-	Player(const Player& other) : pos(other.pos), euler(other.euler), control(other.control) {
+	Player(const Player& other) : pos(other.pos), orientation(other.orientation), control(other.control), signals(other.signals) {
 		this->cam = new Camera(*other.cam);
 	}
 
@@ -101,13 +99,25 @@ public:
 		if (this != &other) {
 			delete cam;
 			this->pos = other.pos;
-			this->euler = other.euler;
+			this->orientation = other.orientation;
 			this->control = other.control;
+			this->signals = other.signals;
 			this->cam = new Camera(*other.cam);
 		}
 		return *this;
 	}
 
+	glm::vec3 getPosition() { return pos; }
+	void setPosition(glm::vec3& pos) { this->pos = pos; this->cam->pos = pos; }
+	void setPosition(float x, float y, float z) { pos.x = x; pos.y = y; pos.z = z; this->cam->pos = pos; }
+
+	ControlComponent getControl() { return control; }
+private:
+	glm::vec3 pos;
+	glm::vec3 orientation; //put the euler angles in radians to make things easier (just translate to degrees for the player)
+	ControlComponent control; //small enough for stack
+	unsigned int signals; //bitfield for control signals
+	std::mutex signal_mutex; //mutex for thread safety when modifying signals
 };
 
 #endif

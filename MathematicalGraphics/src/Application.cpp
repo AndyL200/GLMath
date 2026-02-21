@@ -1,8 +1,6 @@
 #include "Application.h"
 #include "Player.h"
-#include "Cursor.h"
-#include <stb/stb_image.h>
-#include <string>
+
 
 struct Bullet {
 	glm::vec2 pos;
@@ -102,13 +100,7 @@ void raycasting() {
 }
 void drawPlayer(Player& p, GLuint vao, GLuint vbo, GLuint ebo, Shader& s) {
 	//TODO
-	glm::vec3 player_pos = p.pos;
-
-	glm::vec3 up = {0, 1, 0};
-
-	p.cam->setCameraUniform(p.cam->getPerspective(), glm::lookAt(player_pos, player_pos + p.orientation, up), s);
 }
-
 void drawFloor(GLuint vao, GLuint vbo, GLuint ebo, Shader& tile, glm::vec3& color) {
     GLfloat xpos = 0.f, ypos = -0.1f, zpos = 0.f;  // Start below player, centered
     glUseProgram(tile.programID);
@@ -230,6 +222,30 @@ void Application::run() {
 	Shader text;
 	Shader tile;
 	Shader sky;
+
+	uint8_t success = prime.loadShader("shaders/grid.vert", "shaders/grid.frag");
+	if (success != 0) {
+		std::cerr << "Shader failure, enter character to terminate";
+		char x;
+		x = getchar();
+		return;
+	}
+	std::cout << "Prime Shader loaded successfully" << std::endl;
+
+
+	success = tile.loadShader("shaders/tile.vert", "shaders/tile.frag");
+	if (success != 0) {
+		std::cerr << "Shader failure, enter character to terminate";
+		char x;
+		x = getchar();
+		return;
+	}
+
+	std::cout << "Tile Shader loaded successfully" << std::endl;
+
+	glm::vec3 floor_color = hex_to_vec("6589A6");
+
+	
 	
 	//slice in the xz plane (consistent y)
 	uint8_t grid[5][8] = {
@@ -277,7 +293,9 @@ void Application::run() {
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	
+	//set uniforms
+	GLuint tex0Uni = glGetUniformLocation(tile.programID, "tex0");
+	glUniform1i(tex0Uni, 0);
 	
 
 	glm::mat4 perspective = glm::perspective(glm::radians(90.f), (float)width/height, 0.1f, 100.f); //apply perspective (original code didn't need a matrix though)
@@ -292,52 +310,24 @@ void Application::run() {
 
 	CursorComponent cursor;
 	Player player1;
-	player1.pos = { 5.f, 1.f, 4.f };
+	player1.cam->Matrix(prime, perspective);
+	cursor.set_callback([&player1](double xpos, double ypos, float sensitivity) {
+		player1.handleCursorChange(xpos, ypos, sensitivity);
+	});
+	unsigned char pixels[16 * 16 * 4];
+	memset(pixels, 0xff, sizeof(pixels));
 
-	InputManager::getInstance().setControl(&player1.control);
+	GLFWimage image;
+	image.width = 16;
+	image.height = 16;
+	image.pixels = pixels;
+
+	cursor.useCursor(image, main);
+	player1.setPosition(5.f, 1.f, 4.f);
+
+	InputManager::getInstance().setControl(&player1.getControl());
 	InputManager::getInstance().setCursor(&cursor);
-	
-	uint8_t success = prime.loadShader("shaders/grid.vert", "shaders/grid.frag");
-	if (success != 0) {
-		std::cerr << "Shader failure, enter character to terminate";
-		char x;
-		x = getchar();
-		return;
-	}
-	std::cout << "Prime Shader loaded successfully" << std::endl;
 
-
-	success = tile.loadShader("shaders/tile.vert", "shaders/tile.frag");
-	if (success != 0) {
-		std::cerr << "Shader failure, enter character to terminate";
-		char x;
-		x = getchar();
-		return;
-	}
-
-	std::cout << "Tile Shader loaded successfully" << std::endl;
-	
-	glm::vec3 floor_color = hex_to_vec("6589A6");
-
-	//set uniforms
-	GLuint tex0Uni = glGetUniformLocation(tile.programID, "tex0");
-	glUniform1i(tex0Uni, 0);
-
-	glm::vec3 forward = {
-		-glm::sin(player1.euler.y),  // Negate X to fix left/right inversion
-		glm::sin(player1.euler.x),
-		glm::cos(player1.euler.y)
-	};
-	glm::vec3 player_pos = player1.pos;
-
-	//static camera
-	//glm::vec3 camera_pos = {0, 0, -1.f};    // Move camera back
-	//glm::vec3 camera_target = {0, 0, 0}; // Look at origin
-
-	glm::vec3 up = {0, 1, 0};
-
-	player1.cam->setCameraUniform(perspective, glm::lookAt(player_pos, player_pos + forward, up), prime);
-	player1.cam->setCameraUniform(perspective, glm::lookAt(player_pos, player_pos + forward, up), tile);
 	glfwSetCursorPosCallback(main, InputManager::cursorCallback);
 	glfwSetKeyCallback(main, InputManager::keyCallback);
 
@@ -366,6 +356,7 @@ void Application::run() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		glUseProgram(prime.programID);
+		player1.cam->Matrix(prime);
 		for (int i = 4; i >= 0; i--) {
 			for (int j = 0; j < 8; j++) {
 				float xpos = j * 5.f;
@@ -384,8 +375,8 @@ void Application::run() {
 				}
 			}
 		}
-		drawPlayer(player1, p_vao, p_vbo, p_ebo, prime);
-		drawPlayer(player1, p_vao, p_vbo, p_ebo, tile);
+		
+		glUseProgram(tile.programID);
 		drawFloor(t_vao, t_vbo, t_ebo, tile, floor_color);
 		glfwSwapBuffers(main);
 		glfwPollEvents();

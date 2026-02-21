@@ -3,11 +3,8 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <iostream>
-#include <thread>
-#include <vector>
-#include "Shader.h"
+#include "mpch.h"
+#include <stb/stb_image.h>
 
 #ifdef _WIN32
 #include <windows.h>

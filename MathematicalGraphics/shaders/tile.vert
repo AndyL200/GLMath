@@ -6,11 +6,11 @@ layout (location = 2) in vec2 tex;
 out vec3 fragCol;
 out vec2 fragTex;
 
-uniform mat4 perspective;
+//uniform mat4 perspective;
 
 void main()
 {
-gl_Position = perspective * vec4(pos, 1);
+gl_Position = vec4(pos, 1);
 fragCol = color;
 fragTex = tex;
 }

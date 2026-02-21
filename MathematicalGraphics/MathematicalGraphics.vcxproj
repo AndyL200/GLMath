@@ -28,6 +28,7 @@
   <ItemGroup>
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\Cursor.h" />
+    <ClInclude Include="src\mpch.h" />
     <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\Shader.h" />
   </ItemGroup>
